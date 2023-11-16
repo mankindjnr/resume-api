@@ -3,12 +3,14 @@ from .. import schemas, models, utils
 from sqlalchemy.orm import Session
 from ..database import get_db
 
+from .. import schemas, models, utils, oauth2
+
 router = APIRouter(
     tags=['Admin'],
 )
 
 @router.post('/admin', status_code=status.HTTP_201_CREATED, response_model=schemas.AdminResp)
-def create_admin(admin: schemas.AdminBase, db: Session = Depends(get_db)):
+def create_admin(admin: schemas.AdminBase, db: Session = Depends(get_db), the_admin: int = Depends(oauth2.get_current_admin)):
     admin.password = utils.hash_password(admin.password)
 
     new_admin = models.User(**admin.dict())

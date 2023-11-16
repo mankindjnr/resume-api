@@ -5,11 +5,13 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, utils, oauth2
+from ..models import User
 
 router = APIRouter(
     tags=["SUMMARY"],
 )
+# remember with the current_user/admin dependance, you can pull the user/admin currently logged in form it
 
 @router.get("/summary", response_model=schemas.SummaryResp, status_code=status.HTTP_200_OK)
 def summary(db: Session = Depends(get_db)):
@@ -21,7 +23,7 @@ def summary(db: Session = Depends(get_db)):
     return all_summary_resp
 
 @router.post("/summary", response_model=schemas.SummaryResp, status_code=status.HTTP_201_CREATED)
-def create_summary(summary: schemas.SummaryBase, db: Session = Depends(get_db)):
+def create_summary(summary: schemas.SummaryBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_summary = models.Summary(**summary.dict())
 
     db.add(new_summary)
@@ -32,7 +34,7 @@ def create_summary(summary: schemas.SummaryBase, db: Session = Depends(get_db)):
     return schemas.SummaryResp(Summary=[summary_resp])
 
 @router.put("/summary/{id}", response_model=schemas.SummaryBase, status_code=status.HTTP_202_ACCEPTED)
-def update_summary(id: int, summary: schemas.SummaryBase, db: Session = Depends(get_db)):
+def update_summary(id: int, summary: schemas.SummaryBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     summary_update = db.query(models.Summary).filter(models.Summary.id == id).first()
 
     if not summary_update:
@@ -47,7 +49,7 @@ def update_summary(id: int, summary: schemas.SummaryBase, db: Session = Depends(
 
 
 @router.delete("/summary/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_summary(id: int, db: Session = Depends(get_db)):
+def delete_summary(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     summary_to_delete = db.query(models.Summary).filter(models.Summary.id == id).first()
 
     if not summary_to_delete:

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["Projects"],
@@ -30,7 +30,7 @@ def get_a_project(id: int, db: Session =  Depends(get_db)):
     return schemas.ProjectsResp(Projects=[project_resp])
 
 @router.post("/projects", response_model=schemas.ProjectsResp, status_code=status.HTTP_201_CREATED)
-def add_project(project: schemas.ProjectsBase, db: Session = Depends(get_db)):
+def add_project(project: schemas.ProjectsBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_project = models.Projects(**project.dict())
 
     db.add(new_project)
@@ -41,7 +41,7 @@ def add_project(project: schemas.ProjectsBase, db: Session = Depends(get_db)):
     return schemas.ProjectsResp(Projects=[project_resp])
 
 @router.put("/projects/{id}", response_model=schemas.ProjectsResp, status_code=status.HTTP_202_ACCEPTED)
-def update_project(id: int, project: schemas.ProjectsBase, db: Session = Depends(get_db)):
+def update_project(id: int, project: schemas.ProjectsBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     project_to_update = db.query(models.Projects).filter(models.Projects.id == id).first()
 
     if not project_to_update:
@@ -55,7 +55,7 @@ def update_project(id: int, project: schemas.ProjectsBase, db: Session = Depends
     return schemas.ProjectsResp(Projects=[updated_project])
 
 @router.delete("/projects/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(id: int, db: Session = Depends(get_db)):
+def delete_project(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     project_to_delete = db.query(models.Projects).filter(models.Projects.id == id).first()
 
     if not project_to_delete:

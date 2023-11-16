@@ -3,6 +3,8 @@ from .. import schemas, models, utils
 from sqlalchemy.orm import Session
 from ..database import get_db
 
+from .. import schemas, models, utils, oauth2
+
 router = APIRouter(
     tags=['Users'],
 )
@@ -19,7 +21,7 @@ def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     return {"User": [{"email": new_user.email, "created_at": new_user.created_at}]}
 
 @router.get('/users', status_code=status.HTTP_200_OK, response_model=schemas.UserResp)
-def get_user(db: Session = Depends(get_db)):
+def get_user(db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     all_users = db.query(models.User).all()
 
     if not all_users:

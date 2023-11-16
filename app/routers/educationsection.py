@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["EDUCATION"],
@@ -32,7 +32,7 @@ def education(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/education", response_model=schemas.EducationResp, status_code=status.HTTP_201_CREATED)
-def education(education: schemas.EducationBase, db: Session = Depends(get_db)):
+def education(education: schemas.EducationBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_education = models.Education(**education.dict())
 
     db.add(new_education)
@@ -44,7 +44,7 @@ def education(education: schemas.EducationBase, db: Session = Depends(get_db)):
 
 
 @router.put("/education/{id}", response_model=schemas.EducationResp, status_code=status.HTTP_202_ACCEPTED)
-def update_education(id: int, education: schemas.EducationBase, db: Session = Depends(get_db)):
+def update_education(id: int, education: schemas.EducationBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     education_to_update = db.query(models.Education).filter(models.Education.id == id).first()
 
     if not education_to_update:
@@ -58,7 +58,7 @@ def update_education(id: int, education: schemas.EducationBase, db: Session = De
     return schemas.EducationResp(Education=[updated_education])
 
 @router.delete("/education/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_education(id: int, db: Session = Depends(get_db)):
+def delete_education(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     education_to_delete = db.query(models.Education).filter(models.Education.id == id).first()
 
     if not education_to_delete:

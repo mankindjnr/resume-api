@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["Work Experience"],
@@ -32,7 +32,7 @@ def get_work_experience(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/work-experience", response_model=schemas.workResp, status_code=status.HTTP_201_CREATED)
-def create_work_experience(experience: schemas.workBase, db: Session = Depends(get_db)):
+def create_work_experience(experience: schemas.workBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_experience = models.WorkExperience(**experience.dict())
 
     db.add(new_experience)
@@ -44,7 +44,7 @@ def create_work_experience(experience: schemas.workBase, db: Session = Depends(g
 
 
 @router.put("/work-experience/{id}", response_model=schemas.workResp, status_code=status.HTTP_202_ACCEPTED)
-def update_work_experience(id: int, experience: schemas.workBase, db: Session = Depends(get_db)):
+def update_work_experience(id: int, experience: schemas.workBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     experience_to_update = db.query(models.WorkExperience).filter(models.WorkExperience.id == id).first()
 
     if not experience_to_update:
@@ -59,7 +59,7 @@ def update_work_experience(id: int, experience: schemas.workBase, db: Session = 
 
 
 @router.delete("/work-experience/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_work_experience(id: int, db: Session = Depends(get_db)):
+def delete_work_experience(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     experience_to_delete = db.query(models.WorkExperience).filter(models.WorkExperience.id == id).first()
 
     if not experience_to_delete:

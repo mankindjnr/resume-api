@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["Development"],
@@ -31,7 +31,7 @@ def get_development(id: int, db: Session = Depends(get_db)):
     return schemas.DevelopmentResp(Development=[development_resp])
 
 @router.post("/development", response_model=schemas.DevelopmentResp, status_code=status.HTTP_201_CREATED)
-def create_development(development: schemas.DevelopmentBase, db: Session = Depends(get_db)):
+def create_development(development: schemas.DevelopmentBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_development = models.Development(**development.dict())
 
     db.add(new_development)
@@ -42,7 +42,7 @@ def create_development(development: schemas.DevelopmentBase, db: Session = Depen
     return schemas.DevelopmentResp(Development=[development_resp])
 
 @router.put("/development/{id}", response_model=schemas.DevelopmentResp, status_code=status.HTTP_202_ACCEPTED)
-def update_development(id: int, development: schemas.DevelopmentBase, db: Session = Depends(get_db)):
+def update_development(id: int, development: schemas.DevelopmentBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     development_to_update = db.query(models.Development).filter(models.Development.id == id).first()
 
     if not development_to_update:
@@ -56,7 +56,7 @@ def update_development(id: int, development: schemas.DevelopmentBase, db: Sessio
     return schemas.DevelopmentResp(Development=[updated_development])
 
 @router.delete("/development/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_development(id: int, db: Session = Depends(get_db)):
+def delete_development(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     development_to_delete = db.query(models.Development).filter(models.Development.id == id).first()
 
     if not development_to_delete:

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["Contact"],
@@ -19,7 +19,7 @@ def get_all(db: Session = Depends(get_db)):
     return contacts
 
 @router.post('/contacts', response_model=schemas.ContactResp, status_code=status.HTTP_201_CREATED)
-def add_contact(contact: schemas.ContactBase, db: Session = Depends(get_db)):
+def add_contact(contact: schemas.ContactBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_contact = models.Contact(**contact.dict())
 
     db.add(new_contact)
@@ -30,7 +30,7 @@ def add_contact(contact: schemas.ContactBase, db: Session = Depends(get_db)):
     return schemas.ContactResp(SoftwareEngineer=[contact_resp])
 
 @router.put('/contacts/{id}', response_model=schemas.ContactResp, status_code=status.HTTP_202_ACCEPTED)
-def update_contacts(id: int, contact: schemas.ContactBase, db: Session = Depends(get_db)):
+def update_contacts(id: int, contact: schemas.ContactBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     contact_to_update = db.query(models.Contact).filter(models.Contact.id == id).first()
 
     if not contact_to_update:
@@ -44,7 +44,7 @@ def update_contacts(id: int, contact: schemas.ContactBase, db: Session = Depends
     return schemas.ContactResp(SoftwareEngineer=[updated_contact])
 
 @router.delete('/contacts/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_contact(id: int, db: Session = Depends(get_db)):
+def delete_contact(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     contact_to_delete = db.query(models.Contact).filter(models.Contact.id == id).first()
 
     if not contact_to_delete:

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..database import get_db
-from .. import schemas, models
+from .. import schemas, models, oauth2
 
 router = APIRouter(
     tags=["Technical skills"],
@@ -32,7 +32,7 @@ def get_technicalskills(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/technical-skills", response_model=schemas.TechnicalSkillsResp, status_code=status.HTTP_201_CREATED)
-def create_technical_skill(skills: schemas.TechnicalSkillsBase, db: Session = Depends(get_db)):
+def create_technical_skill(skills: schemas.TechnicalSkillsBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     new_skills = models.TechnicalSkills(**skills.dict())
 
     db.add(new_skills)
@@ -43,7 +43,7 @@ def create_technical_skill(skills: schemas.TechnicalSkillsBase, db: Session = De
     return schemas.TechnicalSkillsResp(TechnicalSkills=[skills_resp])
 
 @router.put("/technical-skills/{id}", response_model=schemas.TechnicalSkillsResp, status_code=status.HTTP_202_ACCEPTED)
-def update_technical_skills(id: int, technical_skill: schemas.TechnicalSkillsBase, db: Session = Depends(get_db)):
+def update_technical_skills(id: int, technical_skill: schemas.TechnicalSkillsBase, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     skills_to_update = db.query(models.TechnicalSkills).filter(models.TechnicalSkills.id == id).first()
 
     if not skills_to_update:
@@ -57,7 +57,7 @@ def update_technical_skills(id: int, technical_skill: schemas.TechnicalSkillsBas
     return schemas.TechnicalSkillsResp(TechnicalSkills=[updated_skills])
 
 @router.delete("/technical-skills/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_technical_skills(id: int, db: Session = Depends(get_db)):
+def delete_technical_skills(id: int, db: Session = Depends(get_db), admin: int = Depends(oauth2.get_current_admin)):
     skills_to_delete = db.query(models.TechnicalSkills).filter(models.TechnicalSkills.id == id).first()
 
     if not skills_to_delete:

@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from decouple import config
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
 SECRET_KEY = config("JWT_SECRET")
 ALGORITHM = config("JWT_ALGORITHM")
@@ -35,9 +35,21 @@ def verify_token(token: str, credentials_exception):
     return token_data
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
-    credentials_exception = HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail = "invalid credentials", headers="WWW-Authenticate: Bearer")
+    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail = "invalid credentials", headers="WWW-Authenticate: Bearer")
 
     token = verify_token(token, credentials_exception)
 
     user = db.query(models.User).filter(models.User.id == token.id).first()
     return user
+
+def get_current_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
+    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail = "invalid credentials", headers="WWW-Authenticate: Bearer")
+
+    token = verify_token(token, credentials_exception)
+
+    admin = db.query(models.User).filter(models.User.id == token.id).first()
+
+    if not admin.is_admin:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'You are not an admin')
+
+    return admin
