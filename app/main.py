@@ -17,16 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(summarysection.router)
-app.include_router(educationsection.router)
-app.include_router(workexperience.router)
-app.include_router(development.router)
-app.include_router(technicalskills.router)
-app.include_router(projects.router)
-app.include_router(contact.router)
-
-#TODO: THE base route will call the whole resume, displaying everything
-
 @app.get("/", response_model=schemas.ResumeResp, status_code=200)
 def resume(db: Session = Depends(database.get_db)):
     all_summary = db.query(models.Summary).all()
@@ -47,3 +37,11 @@ def resume(db: Session = Depends(database.get_db)):
 
     all_resume = schemas.ResumeResp(Summary=summary_base, Education=education_base, WorkExperience=work_experience_base, Development=development_base, TechnicalSkills=technical_skills_base, Projects=projects_base, SoftwareEngineer=contact_base)
     return all_resume
+
+app.include_router(summarysection.router)
+app.include_router(educationsection.router)
+app.include_router(workexperience.router)
+app.include_router(development.router)
+app.include_router(technicalskills.router)
+app.include_router(projects.router)
+app.include_router(contact.router)
