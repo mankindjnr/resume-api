@@ -6,6 +6,15 @@ import datetime
 import json
 from sqlalchemy.dialects.postgresql import JSONB
 
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    email = Column(String(60), nullable=False)
+    is_admin = Column(Boolean, nullable=True, default=False)
+    password = Column(String(60), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
 class Summary(Base):
     __tablename__ = 'summary'
 

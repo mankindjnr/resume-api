@@ -3,6 +3,58 @@ from typing import Optional, List
 from datetime import datetime
 from pydantic.types import conint
 
+# ====================  User  ====================
+class UserBase(BaseModel):
+    email: EmailStr
+    password: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+class Response(BaseModel):
+    email: EmailStr
+    created_at: datetime
+
+class UserResp(BaseModel):
+    User: List[Response]
+
+    class Config:
+        orm_mode = True
+
+# ====================  Admin  ====================
+
+class AdminBase(BaseModel):
+    email: EmailStr
+    is_admin: bool
+    password: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+class AdminResp(BaseModel):
+    Admin: List[Response]
+
+    class Config:
+        orm_mode = True
+
+# ====================  Token  ====================
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
+
 # ====================  Summary  ====================
 class SummaryBase(BaseModel):
     summary: List[str]
@@ -153,5 +205,3 @@ class ResumeResp(BaseModel):
 
     class Config:
         orm_mode = True
-
-# ====================  User  ====================

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from sqlalchemy.orm import Session
 
-from .routers import summarysection, educationsection, workexperience, development, technicalskills, projects, contact
+from .routers import summarysection, educationsection, workexperience, development, technicalskills, projects, contact, login, admin, users
 from . import schemas, models, database
 app = FastAPI()
 
@@ -38,6 +38,7 @@ def resume(db: Session = Depends(database.get_db)):
     all_resume = schemas.ResumeResp(Summary=summary_base, Education=education_base, WorkExperience=work_experience_base, Development=development_base, TechnicalSkills=technical_skills_base, Projects=projects_base, SoftwareEngineer=contact_base)
     return all_resume
 
+app.include_router(login.router)
 app.include_router(summarysection.router)
 app.include_router(educationsection.router)
 app.include_router(workexperience.router)
@@ -45,3 +46,5 @@ app.include_router(development.router)
 app.include_router(technicalskills.router)
 app.include_router(projects.router)
 app.include_router(contact.router)
+app.include_router(users.router)
+app.include_router(admin.router)
